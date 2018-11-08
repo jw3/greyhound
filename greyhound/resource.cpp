@@ -123,11 +123,11 @@ void TimedReader::create()
         try
         {
             entwine::arbiter::Endpoint ep(
-                    m_manager.outerScope()->getEndpoint(
+                    m_manager.arbiter()->getEndpoint(
                         entwine::arbiter::util::join(path, m_name)));
 
             entwine::arbiter::Endpoint tmp(
-                    m_manager.outerScope()->getEndpoint(
+                    m_manager.arbiter()->getEndpoint(
                         m_manager.config()["tmp"].asString()));
 
             // auto& cache(m_manager.cache());
@@ -204,7 +204,7 @@ Json::Value Resource::infoSingle() const
 
     json["bounds"] = meta.boundsCubic().toJson();
     json["boundsConforming"] = meta.boundsConforming().toJson();
-    //json["srs"] = meta.srs();
+    json["srs"] = meta.srs().codeString();
 //    json["baseDepth"] = Json::UInt64(meta.structure().body()); // TODO.
 
     if (const auto r = meta.reprojection()) json["reprojection"] = r->toJson();

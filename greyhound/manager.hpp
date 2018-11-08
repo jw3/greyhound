@@ -27,7 +27,7 @@ public:
     SharedResource get(std::string name, Req& req);
 
     entwine::Cache& cache() const { return m_cache; }
-    std::shared_ptr<entwine::arbiter::Arbiter> outerScope() const { return m_outerScope; }
+    std::shared_ptr<entwine::arbiter::Arbiter> arbiter() const { return m_arbiter; }
     const Paths& paths() const { return m_paths; }
     const Headers& headers() const { return m_headers; }
     std::size_t threads() const { return m_threads; }
@@ -44,7 +44,7 @@ private:
     }
 
     mutable entwine::Cache m_cache;
-    mutable std::shared_ptr<entwine::arbiter::Arbiter> m_outerScope;
+    mutable std::shared_ptr<entwine::arbiter::Arbiter> m_arbiter;
 
     Paths m_paths;
     Headers m_headers;
