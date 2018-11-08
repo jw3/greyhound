@@ -4,14 +4,11 @@
 
 #include <pdal/compression/LazPerfCompression.hpp>
 
-#include <entwine/new-reader/new-reader.hpp>
+#include <entwine/reader/reader.hpp>
 #include <entwine/types/delta.hpp>
-#include <entwine/types/manifest.hpp>
 #include <entwine/types/metadata.hpp>
 #include <entwine/types/reprojection.hpp>
 #include <entwine/types/schema.hpp>
-#include <entwine/types/structure.hpp>
-#include <entwine/util/compression.hpp>
 #include <entwine/util/unique.hpp>
 
 #include <greyhound/chunker.hpp>
@@ -70,30 +67,30 @@ std::string color(const std::string& s, Color c)
 
 std::mutex m;
 
-void adjust(Json::Value& q, const entwine::NewReader& reader)
+void adjust(Json::Value& q, const entwine::Reader& reader)
 {
     // These are one-off adjustments to get speck.ly's dynamic base depth to
     // conform to EPT's static base depth.
 
-    const uint64_t base(reader.metadata().structure().body());
-
-    if (base < 7)
-    {
-        const uint64_t delta(7 - base);
-
-        if (q.isMember("depth") && q["depth"].asUInt64() > 0)
-        {
-            q["depth"] = q["depth"].asUInt64() - delta;
-        }
-        if (q.isMember("depthBegin") && q["depthBegin"].asUInt64() > 0)
-        {
-            q["depthBegin"] = q["depthBegin"].asUInt64() - delta;
-        }
-        if (q.isMember("depthEnd") && q["depthEnd"].asUInt64() > 0)
-        {
-            q["depthEnd"] = q["depthEnd"].asUInt64() - delta;
-        }
-    }
+//    const uint64_t base(reader.metadata().metadata().structure().body());
+//
+//    if (base < 7)
+//    {
+//        const uint64_t delta(7 - base);
+//
+//        if (q.isMember("depth") && q["depth"].asUInt64() > 0)
+//        {
+//            q["depth"] = q["depth"].asUInt64() - delta;
+//        }
+//        if (q.isMember("depthBegin") && q["depthBegin"].asUInt64() > 0)
+//        {
+//            q["depthBegin"] = q["depthBegin"].asUInt64() - delta;
+//        }
+//        if (q.isMember("depthEnd") && q["depthEnd"].asUInt64() > 0)
+//        {
+//            q["depthEnd"] = q["depthEnd"].asUInt64() - delta;
+//        }
+//    }
 }
 
 } // unnamed namespace
@@ -126,16 +123,16 @@ void TimedReader::create()
         try
         {
             entwine::arbiter::Endpoint ep(
-                    m_manager.outerScope().getArbiterPtr()->getEndpoint(
+                    m_manager.outerScope()->getEndpoint(
                         entwine::arbiter::util::join(path, m_name)));
 
             entwine::arbiter::Endpoint tmp(
-                    m_manager.outerScope().getArbiterPtr()->getEndpoint(
+                    m_manager.outerScope()->getEndpoint(
                         m_manager.config()["tmp"].asString()));
 
             // auto& cache(m_manager.cache());
 
-            if (auto r = std::make_shared<entwine::NewReader>(
+            if (auto r = std::make_shared<entwine::Reader>(
                         entwine::arbiter::util::join(path, m_name)))
             {
                 std::cout << "SUCCESS" << std::endl;
@@ -205,14 +202,14 @@ Json::Value Resource::infoSingle() const
     }
     */
 
-    json["bounds"] = meta.boundsNativeCubic().toJson();
-    json["boundsConforming"] = meta.boundsNativeConforming().toJson();
-    json["srs"] = meta.srs();
-    json["baseDepth"] = Json::UInt64(meta.structure().body()); // TODO.
+    json["bounds"] = meta.boundsCubic().toJson();
+    json["boundsConforming"] = meta.boundsConforming().toJson();
+    //json["srs"] = meta.srs();
+//    json["baseDepth"] = Json::UInt64(meta.structure().body()); // TODO.
 
     if (const auto r = meta.reprojection()) json["reprojection"] = r->toJson();
-    if (meta.density()) json["density"] = meta.density();
-    if (const auto d = meta.delta()) entwine::merge(json, d->toJson());
+//    if (meta.density()) json["density"] = meta.density();
+//    if (const auto d = meta.delta()) entwine::merge(json, d->toJson());
 
     return json;
 }
@@ -304,28 +301,28 @@ void Resource::hierarchy(Req& req, Res& res)
         throw std::runtime_error("Hierarchy not allowed for multi-resource");
     }
 
-    Json::Value q(parseQuery(req));
-    adjust(q, *m_readers.front()->get());
-    const Json::Value result(m_readers.front()->get()->hierarchy(q));
-    auto h(m_manager.headers());
-    h.emplace("Content-Type", "application/json");
-    res.write(dense(result), h);
-
-    std::lock_guard<std::mutex> lock(m);
-    std::cout << m_name << "/" << color("hier", Color::Yellow) << ": " <<
-        color(std::to_string(msSince(start)), Color::Magenta) << " ms ";
-
-    std::cout << "D: [";
-    if (q.isMember("depthBegin")) std::cout << q["depthBegin"].asUInt();
-    else if (q.isMember("depth")) std::cout << q["depth"].asUInt();
-    else std::cout << "all";
-
-    std::cout << ", ";
-    if (q.isMember("depthEnd")) std::cout << q["depthEnd"].asUInt();
-    else if (q.isMember("depth")) std::cout << q["depth"].asUInt() + 1;
-    else std::cout << "all";
-
-    std::cout << ")" << std::endl;
+//    Json::Value q(parseQuery(req));
+//    adjust(q, *m_readers.front()->get());
+//    const Json::Value result(m_readers.front()->get()->hierarchy());
+//    auto h(m_manager.headers());
+//    h.emplace("Content-Type", "application/json");
+//    res.write(dense(result), h);
+//
+//    std::lock_guard<std::mutex> lock(m);
+//    std::cout << m_name << "/" << color("hier", Color::Yellow) << ": " <<
+//        color(std::to_string(msSince(start)), Color::Magenta) << " ms ";
+//
+//    std::cout << "D: [";
+//    if (q.isMember("depthBegin")) std::cout << q["depthBegin"].asUInt();
+//    else if (q.isMember("depth")) std::cout << q["depth"].asUInt();
+//    else std::cout << "all";
+//
+//    std::cout << ", ";
+//    if (q.isMember("depthEnd")) std::cout << q["depthEnd"].asUInt();
+//    else if (q.isMember("depth")) std::cout << q["depth"].asUInt() + 1;
+//    else std::cout << "all";
+//
+//    std::cout << ")" << std::endl;
 }
 
 template<typename Req, typename Res>
@@ -472,7 +469,7 @@ void Resource::read(Req& req, Res& res)
     }
     else data = qdata;
 
-    points = query->numPoints();
+    points = query->points();
 
     const char* pos(reinterpret_cast<const char*>(&points));
     data.insert(data.end(), pos, pos + sizeof(uint32_t));
@@ -557,7 +554,7 @@ void Resource::count(Req& req, Res& res)
     {
         auto query(reader->get()->count(q));
         query->run();
-        points += query->numPoints();
+        points += query->points();
         // chunks += query->chunks();
     }
 

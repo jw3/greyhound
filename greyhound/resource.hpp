@@ -5,14 +5,14 @@
 
 #include <greyhound/defs.hpp>
 
-namespace entwine { class NewReader; }
+namespace entwine { class Reader; }
 
 namespace greyhound
 {
 
 class Manager;
 
-using SharedReader = std::shared_ptr<entwine::NewReader>;
+using SharedReader = std::shared_ptr<entwine::Reader>;
 
 class TimedReader
 {

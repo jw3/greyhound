@@ -4,7 +4,7 @@
 #include <cctype>
 #include <thread>
 
-#include <entwine/new-reader/new-reader.hpp>
+#include <entwine/reader/reader.hpp>
 #include <entwine/util/json.hpp>
 
 namespace greyhound
@@ -56,8 +56,8 @@ Manager::Manager(const Configuration& config)
     , m_config(config)
     , m_swept(getNow())
 {
-    m_outerScope.getArbiter(config["arbiter"]);
-    m_auth = Auth::maybeCreate(config, *m_outerScope.getArbiter());
+    m_outerScope = std::make_shared<entwine::arbiter::Arbiter>(m_config["arbiter"]);
+    m_auth = Auth::maybeCreate(config, *m_outerScope);
 
     for (const auto key : config["http"]["headers"].getMemberNames())
     {

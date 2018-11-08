@@ -5,13 +5,15 @@
 #include <mutex>
 #include <string>
 
-#include <entwine/new-reader/new-cache.hpp>
-#include <entwine/types/outer-scope.hpp>
+#include <entwine/reader/cache.hpp>
 
 #include <greyhound/auth.hpp>
 #include <greyhound/configuration.hpp>
 #include <greyhound/defs.hpp>
 #include <greyhound/resource.hpp>
+
+#include <entwine/third/arbiter/arbiter.hpp>
+#include <entwine/types/files.hpp>
 
 namespace greyhound
 {
@@ -24,8 +26,8 @@ public:
     template<typename Req>
     SharedResource get(std::string name, Req& req);
 
-    entwine::NewCache& cache() const { return m_cache; }
-    entwine::OuterScope& outerScope() const { return m_outerScope; }
+    entwine::Cache& cache() const { return m_cache; }
+    std::shared_ptr<entwine::arbiter::Arbiter> outerScope() const { return m_outerScope; }
     const Paths& paths() const { return m_paths; }
     const Headers& headers() const { return m_headers; }
     std::size_t threads() const { return m_threads; }
@@ -41,8 +43,8 @@ private:
         else return std::vector<std::string>{ name };
     }
 
-    mutable entwine::NewCache m_cache;
-    mutable entwine::OuterScope m_outerScope;
+    mutable entwine::Cache m_cache;
+    mutable std::shared_ptr<entwine::arbiter::Arbiter> m_outerScope;
 
     Paths m_paths;
     Headers m_headers;
