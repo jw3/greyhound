@@ -29,8 +29,10 @@ RUN \
         -DCMAKE_BUILD_TYPE=Release .. ;\
     make -j4 ;\
     make install; \
-    git clone https://github.com/hobu/greyhound.git /var/greyhound ;\
-    cd /var/greyhound && mkdir build && cd build ;\
+    git clone https://github.com/jw3/greyhound.git /var/greyhound ;\
+    cd /var/greyhound && \
+    git checkout jw3/ept && \
+    mkdir build && cd build ;\
     cmake -G "Unix Makefiles" \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DCMAKE_BUILD_TYPE=RelWithDebInfo .. ;\
